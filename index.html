@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gia Dụng Bếp & Gia Đình</title>
+  <!-- Link tới file CSS bên ngoài -->
+  <link rel="stylesheet" href="css.css">
+  <!-- Font Awesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+
+  <!-- Header -->
+  <header>
+    <div class="header-container">
+      <div class="logo">
+        <i class="fa-solid fa-house-chimney-window"></i> HomeKitchen
+      </div>
+      <div class="search-bar">
+        <i class="fa-solid fa-magnifying-glass"></i>
+        <input type="text" id="searchInput" placeholder="Tìm kiếm đồ gia dụng..." onkeyup="filterProducts()">
+      </div>
+      <div class="cart-icon" onclick="toggleCart()">
+        <i class="fa-solid fa-cart-shopping"></i>
+        <span class="cart-badge" id="cartBadge">0</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- Hero Section -->
+  <section class="hero">
+    <h1>Thiết Bị Bếp & Đồ Dùng Gia Đình</h1>
+    <p>Hiện đại - Tiện nghi - Nâng tầm không gian sống của bạn</p>
+  </section>
+
+  <!-- Main Content -->
+  <div class="container">
+    <!-- Sidebar Filters -->
+    <aside class="sidebar">
+      <h3>Danh Mục</h3>
+      <div class="filter-group">
+        <label><input type="radio" name="category" value="all" checked onclick="filterProducts()"> Tất cả</label>
+        <label><input type="radio" name="category" value="bep" onclick="filterProducts()"> Đồ dùng nhà bếp</label>
+        <label><input type="radio" name="category" value="giadung" onclick="filterProducts()"> Gia dụng thông minh</label>
+      </div>
+
+      <h3>Đánh Giá Star</h3>
+      <div class="filter-group">
+        <label><input type="radio" name="rating" value="0" checked onclick="filterProducts()"> Tất cả rating</label>
+        <label><input type="radio" name="rating" value="5" onclick="filterProducts()"> 5 Sao</label>
+        <label><input type="radio" name="rating" value="4" onclick="filterProducts()"> Từ 4 Sao trở lên</label>
+      </div>
+    </aside>
+
+    <!-- Product Grid -->
+    <main class="product-grid" id="productGrid">
+      <!-- Sản phẩm sẽ được render dynamic bằng JavaScript -->
+    </main>
+  </div>
+
+  <!-- Cart Modal -->
+  <div class="modal" id="cartModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>Giỏ Hàng Của Bạn</h2>
+        <span class="close-btn" onclick="toggleCart()">&times;</span>
+      </div>
+      <div class="cart-items" id="cartItems">
+        <!-- Danh sách đồ trong giỏ hàng -->
+      </div>
+      <div class="modal-footer">
+        <div>Tổng tiền: <span class="total-price" id="cartTotal">0 VNĐ</span></div>
+        <button class="btn-checkout" onclick="alert('Cảm ơn bạn đã đặt hàng!')">Thanh Toán</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer>
+    <p>&copy; 2026 HomeKitchen - Đồ Gia Dụng & Bếp Gia Đình.</p>
+  </footer>
+
+  <!-- Script xử lý ứng dụng -->
+  <script>
+    const products = [
+      {
+        id: 1,
+        name: "Nồi chiên không dầu 5.5L",
+        category: "bep",
+        price: 1250000,
+        rating: 4.8,
+        reviews: 120,
+        image: "./assets/image/noichien_jpg.webp"       
+        },
+      {
+        id: 2,
+        name: "Bộ dao làm bếp thép không gỉ 5 món",
+        category: "bep",
+        price: 450000,
+        rating: 4.5,
+        reviews: 85,
+        image: "./assets/image/daodia_jpg.jpg"
+      },
+      {
+        id: 3,
+        name: "Máy hút bụi cầm tay không dây",
+        category: "giadung",
+        price: 890000,
+        rating: 4.2,
+        reviews: 45,
+        image: "./assets/image/hutbui_jpg.webp"
+      },
+      {
+        id: 4,
+        name: "Ấm siêu tốc thủy tinh 1.8L",
+        category: "bep",
+        price: 320000,
+        rating: 5.0,
+        reviews: 210,
+        image: "./assets/image/amthuytinh.jpg.webp"
+      },
+      {
+        id: 5,
+        name: "Chảo chống dính vân đá 28cm",
+        category: "bep",
+        price: 280000,
+        rating: 4.6,
+        reviews: 98,
+        image: "./assets/image/chao.jpg.webp.webp"
+      },
+      {
+        id: 6,
+        name: "Máy khuếch tán tinh dầu thông minh",
+        category: "giadung",
+        price: 350000,
+        rating: 4.0,
+        reviews: 30,
+        image: "./assets/image/tinhdau_jpg.webp"
+      }
+    ];
+
+    let cart = [];
+
+    function renderStars(rating) {
+      let starsHtml = '';
+      const fullStars = Math.floor(rating);
+      const hasHalfStar = rating % 1 >= 0.5;
+
+      for (let i = 0; i < fullStars; i++) {
+        starsHtml += '<i class="fa-solid fa-star"></i>';
+      }
+      if (hasHalfStar) {
+        starsHtml += '<i class="fa-solid fa-star-half-stroke"></i>';
+      }
+      const emptyStars = 5 - Math.ceil(rating);
+      for (let i = 0; i < emptyStars; i++) {
+        starsHtml += '<i class="fa-regular fa-star"></i>';
+      }
+      return starsHtml;
+    }
+
+    function formatPrice(price) {
+      return price.toLocaleString('vi-VN') + ' VNĐ';
+    }
+
+    function displayProducts(items) {
+      const grid = document.getElementById('productGrid');
+      grid.innerHTML = '';
+
+      if (items.length === 0) {
+        grid.innerHTML = '<p>Không tìm thấy sản phẩm phù hợp.</p>';
+        return;
+      }
+
+      items.forEach(product => {
+        const card = document.createElement('div');
+        card.className = 'product-card';
+        card.innerHTML = `
+          <img src="${product.image}" alt="${product.name}" class="product-image">
+          <div class="product-info">
+            <h4 class="product-title">${product.name}</h4>
+            <div class="product-rating">
+              ${renderStars(product.rating)}
+              <span class="review-count">(${product.rating}/5)</span>
+            </div>
+            <div class="product-price">${formatPrice(product.price)}</div>
+            <button class="btn-add-cart" onclick="addToCart(${product.id})">Thêm vào giỏ</button>
+          </div>
+        `;
+        grid.appendChild(card);
+      });
+    }
+
+    function filterProducts() {
+      const searchValue = document.getElementById('searchInput').value.toLowerCase();
+      const selectedCategory = document.querySelector('input[name="category"]:checked').value;
+      const minRating = parseFloat(document.querySelector('input[name="rating"]:checked').value);
+
+      const filtered = products.filter(product => {
+        const matchesSearch = product.name.toLowerCase().includes(searchValue);
+        const matchesCategory = selectedCategory === 'all' || product.category === selectedCategory;
+        const matchesRating = product.rating >= minRating;
+
+        return matchesSearch && matchesCategory && matchesRating;
+      });
+
+      displayProducts(filtered);
+    }
+
+    function addToCart(productId) {
+      const product = products.find(p => p.id === productId);
+      const existing = cart.find(item => item.id === productId);
+
+      if (existing) {
+        existing.quantity++;
+      } else {
+        cart.push({ ...product, quantity: 1 });
+      }
+
+      updateCartUI();
+    }
+
+    function updateCartUI() {
+      const cartBadge = document.getElementById('cartBadge');
+      const cartItems = document.getElementById('cartItems');
+      const cartTotal = document.getElementById('cartTotal');
+
+      const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
+      cartBadge.innerText = totalItems;
+
+      cartItems.innerHTML = '';
+      let total = 0;
+
+      cart.forEach(item => {
+        total += item.price * item.quantity;
+        const itemEl = document.createElement('div');
+        itemEl.className = 'cart-item';
+        itemEl.innerHTML = `
+          <div class="cart-item-info">
+            <img src="${item.image}" class="cart-item-img">
+            <div>
+              <div style="font-weight:600;">${item.name}</div>
+              <div style="color:var(--text-muted); font-size:0.85rem;">${formatPrice(item.price)}</div>
+            </div>
+          </div>
+          <div class="cart-item-qty">
+            <button class="qty-btn" onclick="changeQty(${item.id}, -1)">-</button>
+            <span>${item.quantity}</span>
+            <button class="qty-btn" onclick="changeQty(${item.id}, 1)">+</button>
+          </div>
+        `;
+        cartItems.appendChild(itemEl);
+      });
+
+      cartTotal.innerText = formatPrice(total);
+    }
+
+    function changeQty(id, delta) {
+      const item = cart.find(i => i.id === id);
+      if (item) {
+        item.quantity += delta;
+        if (item.quantity <= 0) {
+          cart = cart.filter(i => i.id !== id);
+        }
+      }
+      updateCartUI();
+    }
+
+    function toggleCart() {
+      document.getElementById('cartModal').classList.toggle('active');
+    }
+
+    // Khởi tạo hiển thị ban đầu
+    displayProducts(products);
+  </script>
+</body>
+</html>
